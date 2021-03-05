@@ -14,6 +14,7 @@ void getToken(FILE* code, char* dest);
 void labelCollect(FILE* src);
 int encode(FILE* src, char* inst);
 int labelSearch(char* label);
+int* assemble(int* fp);
 
 extern struct label label_list[64];
 extern int label_cnt;

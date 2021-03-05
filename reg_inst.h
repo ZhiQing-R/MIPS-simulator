@@ -91,20 +91,22 @@ typedef enum FORMAT{
     FJ
 }FORMAT;
 
-struct reg{
+typedef struct reg{
     char name[5];
     int val;
-};
+}reg;
 
-struct inst{
+typedef struct inst{
     FORMAT format;
     char name[8];
     int op;
     int func;
-};
+}inst;
 
-extern struct reg* reg_list;
-extern struct inst* inst_list;
+extern reg* reg_list;
+extern inst* inst_list;
+extern long* lo;
+extern long* hi;
 
 void regInit();
 void instInit();

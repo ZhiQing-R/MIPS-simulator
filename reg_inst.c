@@ -6,6 +6,8 @@
 
 struct reg* reg_list;
 struct inst* inst_list;
+long* lo;
+long* hi;
 
 void regInit(){
     reg_list = malloc(32*sizeof(struct reg));

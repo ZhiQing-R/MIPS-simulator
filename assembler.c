@@ -55,3 +55,38 @@ int main(){
     return 0;
 }
 
+int* assemble(int* fp){
+    int* PC = fp;
+    char in;
+    FILE* read_in = stdin;
+    FILE* mips_code = fopen("code.txt","w");
+    in = getc(read_in);
+    while (!feof(read_in))
+    {
+        putc(in,mips_code);
+        in = getc(read_in);
+    }
+    fclose(read_in);
+    fclose(mips_code);
+    mips_code = fopen("code.txt","r");
+    int code;
+    regInit();
+    instInit();
+    labelCollect(mips_code);
+    fseek(mips_code, 0, SEEK_SET);
+    char token[16];
+    while(1){
+        getToken(mips_code,token);
+        if(strcmp(token,".text") == 0) break;
+    }
+    while(!feof(mips_code)){
+        getToken(mips_code,token);
+        if(instSearch(token) >= 0){
+            code = encode(mips_code,token);
+            *PC = code;
+            PC = PC + 1;
+        }
+    }
+    fclose(mips_code);
+    return PC;
+}
