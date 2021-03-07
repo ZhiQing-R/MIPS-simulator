@@ -4,11 +4,16 @@
 #include "freader.h"
 #include "reg_inst.h"
 
+int* PC;
+long realm;
+_Bool llbit = 0;
+
 int main(){
-    int* realm = malloc(6*1024*1024);
-    reg_list[29].val = (int)realm + 6*1024*1024 - 0x400000;
+    int* realmPtr = malloc(6*1024*1024);
+    realm = (long)realmPtr;
+    reg_list[29].val = realm + 6*1024*1024 - 0x400000;
     int* text_end = assemble(realm);
-    int* PC = realm;
+    PC = realm + 0x400000;
     
     return 0; 
 }

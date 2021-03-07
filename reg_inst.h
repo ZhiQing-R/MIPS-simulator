@@ -105,8 +105,11 @@ typedef struct inst{
 
 extern reg* reg_list;
 extern inst* inst_list;
-extern long* lo;
-extern long* hi;
+extern int* lo;
+extern int* hi;
+extern int* PC;
+extern long realm;
+extern _Bool llbit;
 
 void regInit();
 void instInit();

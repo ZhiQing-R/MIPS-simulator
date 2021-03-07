@@ -44,10 +44,12 @@ int main(){
         getToken(mips_code,token);
         if(strcmp(token,".text") == 0) break;
     }
+    int inst_cnt = 0;
     while(!feof(mips_code)){
         getToken(mips_code,token);
         if(instSearch(token) >= 0){
-            code = encode(mips_code,token);
+            inst_cnt++;
+            code = encode(mips_code,token,inst_cnt);
             printBin(code);
         }
     }
@@ -55,8 +57,8 @@ int main(){
     return 0;
 }
 
-int* assemble(int* fp){
-    int* PC = fp;
+int* assemble(long fp){
+    int* PC = (int*)fp;
     char in;
     FILE* read_in = stdin;
     FILE* mips_code = fopen("code.txt","w");
@@ -79,10 +81,12 @@ int* assemble(int* fp){
         getToken(mips_code,token);
         if(strcmp(token,".text") == 0) break;
     }
+    int inst_cnt;
     while(!feof(mips_code)){
         getToken(mips_code,token);
         if(instSearch(token) >= 0){
-            code = encode(mips_code,token);
+            inst_cnt++;
+            code = encode(mips_code,token,inst_cnt);
             *PC = code;
             PC = PC + 1;
         }

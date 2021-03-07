@@ -69,8 +69,8 @@ int labelSearch(char* label){
     }
     return -1;
 }
-int encode(FILE* src, char* inst){
-    int op, rs, rt, rd, imm, offset, address, shamt, func; 
+int encode(FILE* src, char* inst, int inst_cnt){
+    int op, rs, rt, rd, imm, address, shamt, func; 
     char* label;
     enum INSTRUCTION inst_num = instSearch(inst);
     char token[16];
@@ -176,7 +176,13 @@ int encode(FILE* src, char* inst){
         getToken(src,token);
         rs = regSearch(token);
         getToken(src,token);
-        imm = labelSearch(token);
+        int labelIndex = labelSearch(token);
+        if(labelIndex == -1){
+            imm = atoi(token);
+        }else{
+            short offset = labelIndex - inst_cnt;
+            imm = 0 + (unsigned short)offset;
+        }
         break;
     case BGEZ:
     case BGEZAL:
@@ -193,12 +199,23 @@ int encode(FILE* src, char* inst){
         getToken(src,token);
         rs = regSearch(token);
         getToken(src,token);
-        imm = atoi(token);
+        int labelIndex = labelSearch(token);
+        if(labelIndex == -1){
+            imm = atoi(token);
+        }else{
+            short offset = labelIndex - inst_cnt;
+            imm = 0 + (unsigned short)offset;
+        }
         break;
     case J:
     case JAL:
         getToken(src,token);
-        address = labelSearch(token);
+        int labelIndex = labelSearch(token);
+        if(labelIndex == -1){
+            address = atoi(token);
+        }else{
+            address = labelIndex;
+        }
         break;
     case JALR:
         getToken(src,token);
@@ -280,9 +297,9 @@ int encode(FILE* src, char* inst){
     }else if(inst_fmt == FJ){
         m_code = (op<<26) + address;
     }else if (func == -1){
-        m_code = (op<<26) + (rs<<21) + (rt<<16) + imm;
+        m_code = (op<<26) + (rs<<21) + (rt<<16) + (short)imm;
     }else{
-        m_code = (op<<26) + (rs<<21) + (func<<16) + imm;
+        m_code = (op<<26) + (rs<<21) + (func<<16) + (short)imm;
     }
     return m_code;
 }
