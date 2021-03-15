@@ -28,25 +28,25 @@ void execute(){
         rt = &reg_list[(instruction & 0x001f0000)>>16];
         rd = &reg_list[(instruction & 0x0000f800)>>11];
         shamt = (instruction & 0x000007c0) >> 6;
-        for(int i = 0; i < 79; i++){
+        /*for(int i = 0; i < 79; i++){
             if(inst_list[i].op == op && inst_list[i].func == func){
                 printf("%s %s %s %s %d\n",inst_list[i].name,rd->name,rs->name,rt->name,shamt);
                 break;
             }
-        }
+        }*/
     }else if(type == FJ){
         address = instruction & 0x03FFFFFF;
-        printf("Jal %x\n",address);
+        //printf("Jal %x\n",address);
     }else{
         rs = &reg_list[(instruction & 0x03e00000)>>21];
         rt = &reg_list[(instruction & 0x001f0000)>>16];
         imm = instruction & 0x0000FFFF;
-        for(int i = 0; i < 79; i++){
+        /*for(int i = 0; i < 79; i++){
             if(inst_list[i].op == op && (inst_list[i].func == -1 || inst_list[i].func == (instruction & 0x001f0000)>>16)){
                 printf("%s %s %s %d\n",inst_list[i].name,rt->name,rs->name,imm);
                 break;
             }
-        }
+        }*/
     }
     switch(op){
         case 0:{

@@ -11,7 +11,6 @@ struct inst* inst_list;
 void regInit(){
     reg_list = malloc(32*sizeof(struct reg));
     strcpy(reg_list[0].name,"zero");
-    reg_list[0].val = 0;
     strcpy(reg_list[1].name,"at");
     strcpy(reg_list[2].name,"v0");
     strcpy(reg_list[3].name,"v1");
@@ -43,6 +42,9 @@ void regInit(){
     strcpy(reg_list[29].name,"sp");
     strcpy(reg_list[30].name,"fp");
     strcpy(reg_list[31].name,"ra");
+    for(int i = 0; i < 32; i++){
+        reg_list[i].val = 0;
+    }
 }
 
 void instInit(){
