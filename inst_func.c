@@ -1,7 +1,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <fcntl.h>
+#include <unistd.h>
 #include "reg_inst.h"
+
+int* lo;
+int* hi;
+extern int* PC;
+extern long realm;
+extern int llbit;
 
 void add(reg* rs, reg* rt, reg* rd){
     int result = rs->val+ rt->val;
@@ -19,7 +29,7 @@ void addu(reg* rs, reg* rt, reg* rd){
     rd->val = rs->val + rt->val;
 }
 
-void addi(reg* rt, reg* rs, int imm){
+void addi(reg* rt, reg* rs, short imm){
     int result = imm + rs->val;
     if(rs->val > 0 && imm > 0 && result < 0){
         puts("Addition overflow!");
@@ -30,7 +40,7 @@ void addi(reg* rt, reg* rs, int imm){
     }
 }
 
-void addiu(reg* rt, reg* rs, int imm){
+void addiu(reg* rt, reg* rs, short imm){
     rt->val = imm + rs->val;
 }
 
@@ -38,7 +48,7 @@ void and(reg* rs, reg* rt, reg* rd){
     rd->val = rs->val & rt->val;
 }
 
-void andi(reg* rt, reg* rs, int imm){
+void andi(reg* rt, reg* rs, short imm){
     rt->val = imm & rs->val;
 }
 
@@ -76,7 +86,7 @@ void clo(reg* rd, reg* rs){
     rd->val = cnt;
 }
 
-void div(reg* rs, reg* rt){
+void _div(reg* rs, reg* rt){
     if(rt->val == 0){
         puts("Zero division!");
     }
@@ -125,12 +135,10 @@ void madd(reg* rs, reg* rt){
     *hi = *hi + high;
 }
 
-void multu(reg* rs, reg* rt){
-    unsigned int a = rs->val;
-    unsigned int b = rt->val;
-    unsigned long result = a * b;
-    unsigned int low = result;
-    unsigned int high = result>>32;
+void maddu(reg* rs, reg* rt){
+    long result = (unsigned int)rs->val * (unsigned int)rt->val;
+    int low = result;
+    int high = result>>32;
     *lo = *lo + low;
     *hi = *hi + high;
 }
@@ -161,7 +169,7 @@ void or(reg* rd, reg* rs, reg* rt){
     rd->val = rs->val | rt->val;
 }
 
-void ori(reg* rt, reg* rs, int imm){
+void ori(reg* rt, reg* rs, short imm){
     rt->val = rs->val | imm;
 }
 
@@ -216,12 +224,13 @@ void xor(reg* rd, reg* rs, reg* rt){
     rd->val = rs->val ^ rt->val;
 }
 
-void xori(reg* rt, reg* rs, int imm){
+void xori(reg* rt, reg* rs, short imm){
     rt->val = rs->val ^ imm;
 }
 
-void lui(reg* rt, int imm){
-    rt->val = imm << 16;
+void lui(reg* rt, short imm){
+    int result = imm;
+    rt->val = result << 16;
 }
 
 void slt(reg* rd, reg* rs, reg* rt){
@@ -242,8 +251,7 @@ void sltu(reg* rd, reg* rs, reg* rt){
     }
 }
 
-void slti(reg* rt, reg* rs, int imm){
-    imm = (imm << 16) >> 16;
+void slti(reg* rt, reg* rs, short imm){
     if(rs->val < imm){
         rt->val = 1;
     }else{
@@ -251,95 +259,87 @@ void slti(reg* rt, reg* rs, int imm){
     }
 }
 
-void sltiu(reg* rt, reg* rs, int imm){
+void sltiu(reg* rt, reg* rs, short imm){
     unsigned int RS = rs->val;
-    unsigned int IMM = (imm << 16) >> 16;
-    if(rs->val < imm){
+    unsigned int IMM = (unsigned short)imm;
+    if(rs->val < IMM){
         rt->val = 1;
     }else{
         rt->val = 0;
     }
 }
 
-void beq(reg* rs, reg* rt, int imm){
+void beq(reg* rs, reg* rt, short imm){
     if(rs->val == rt->val){
-        imm = (imm << 16) >> 16;
         PC = PC + imm;
     }
 }
 
-void bgez(reg* rs, int imm){
+void bgez(reg* rs, short imm){
     if(rs->val >= 0){
-        imm = (imm << 16) >> 16;
         PC = PC + imm;
     }
 }
 
-void bgezal(reg* rs, int imm){
-    reg_list[30].val = PC - realm + 4;
+void bgezal(reg* rs, short imm){
+    reg_list[30].val = (long)PC - realm + 4;
     if(rs->val >= 0){
-        imm = (imm << 16) >> 16;
         PC = PC + imm;
     }
 }
 
-void bgtz(reg* rs, int imm){
+void bgtz(reg* rs, short imm){
     if(rs->val > 0){
-        imm = (imm << 16) >> 16;
         PC = PC + imm;
     }
 }
 
-void blez(reg* rs, int imm){
+void blez(reg* rs, short imm){
     if(rs->val <= 0){
-        imm = (imm << 16) >> 16;
         PC = PC + imm;
     }
 }
 
-void bltzal(reg* rs, int imm){
-    reg_list[30].val = PC - realm + 4;
+void bltzal(reg* rs, short imm){
+    reg_list[30].val = (long)PC - realm + 4;
     if(rs->val < 0){
-        imm = (imm << 16) >> 16;
         PC = PC + imm;
     }
 }
 
-void bltz(reg* rs, int imm){
+void bltz(reg* rs, short imm){
     if(rs->val < 0){
-        imm = (imm << 16) >> 16;
         PC = PC + imm;
     }
 }
 
-void bne(reg* rs, reg* rt, int imm){
+void bne(reg* rs, reg* rt, short imm){
     if(rs->val != rt->val){
-        imm = (imm << 16) >> 16;
         PC = PC + imm;
     }
 }
 
 void j(int address){
-    int relative_addr = PC - realm;
+    int relative_addr = (long)PC - realm;
     int true_addr = (relative_addr & 0xF0000000) + ((address << 2) & 0x0FFFFFFF);
-    PC = true_addr + realm;
+    PC = (int*)(true_addr + realm);
 }
 
 void jal(int address){
-    int relative_addr = PC - realm;
+    int relative_addr = (long)PC - realm;
     reg_list[31].val = relative_addr + 4;
     int true_addr = (relative_addr & 0xF0000000) + ((address << 2) & 0x0FFFFFFF);
-    PC = true_addr + realm;
+    PC = (int*)(true_addr + realm);
 }
 
 void jalr(reg* rs, reg* rd){
-    int relative_addr = PC - realm;
+    int relative_addr = (long)PC - realm;
     rd->val = relative_addr + 4;
-    PC = rs->val + realm;
+    PC = (int*)(rs->val + realm);
 }
 
 void jr(reg* rs){
-    PC = rs->val + realm;
+    PC = (int*)(rs->val + realm);
 }
 
 void teq(reg* rs, reg* rt){
@@ -348,8 +348,7 @@ void teq(reg* rs, reg* rt){
     }
 }
 
-void teqi(reg* rs, int imm){
-    imm = (imm << 16) >> 16;
+void teqi(reg* rs, short imm){
     if(rs->val == imm){
         puts("TEQI Trap");
     }
@@ -361,8 +360,7 @@ void tne(reg* rs, reg* rt){
     }
 }
 
-void tnei(reg* rs, int imm){
-    imm = (imm << 16) >> 16;
+void tnei(reg* rs, short imm){
     if(rs->val != imm){
         puts("TNEI Trap");
     }
@@ -382,16 +380,15 @@ void tgeu(reg* rs, reg* rt){
     }
 }
 
-void tgei(reg* rs, int imm){
-    imm = (imm << 16) >> 16;
+void tgei(reg* rs, short imm){
     if(rs->val >= imm){
         puts("TGEI Trap");
     }
 }
 
-void tgeiu(reg* rs, int imm){
-    unsigned int IMM = (imm << 16) >> 16;
-    if(rs->val >= IMM){
+void tgeiu(reg* rs, short imm){
+    int IMM = imm;
+    if(rs->val >= (unsigned int)IMM){
         puts("TGEIU Trap");
     }
 }
@@ -410,16 +407,15 @@ void tltu(reg* rs, reg* rt){
     }
 }
 
-void tlti(reg* rs, int imm){
-    imm = (imm << 16) >> 16;
+void tlti(reg* rs, short imm){
     if(rs->val < imm){
         puts("TLTI Trap");
     }
 }
 
-void tltiu(reg* rs, int imm){
-    unsigned int IMM = (imm << 16) >> 16;
-    if(rs->val < IMM){
+void tltiu(reg* rs, short imm){
+    int IMM = imm;
+    if(rs->val < (unsigned int)IMM){
         puts("TLTIU Trap");
     }
 }
@@ -427,42 +423,35 @@ void tltiu(reg* rs, int imm){
 void lb(reg* rs, reg* rt, int address){
     address = (address << 16) >> 16;
     int trueAddr = rs->val + address;
-    int* ptr = realm + trueAddr;
+    int* ptr = (int*)(realm + trueAddr);
     rt->val = *ptr & 0x000000FF;
 }
 
 void lbu(reg* rs, reg* rt, int address){
     address = 0x0000FFFF & address;
     int trueAddr = rs->val + address;
-    int* ptr = realm + trueAddr;
+    int* ptr = (int*)(realm + trueAddr);
     rt->val = *ptr & 0x000000FF;
 }
 
 void lh(reg* rs, reg* rt, int address){
     address = (address << 16) >> 16;
     int trueAddr = rs->val + address;
-    int* ptr = realm + trueAddr;
+    int* ptr = (int*)(realm + trueAddr);
     rt->val = *ptr & 0x0000FFFF;
 }
 
 void lhu(reg* rs, reg* rt, int address){
     address = 0x0000FFFF & address;
     int trueAddr = rs->val + address;
-    int* ptr = realm + trueAddr;
+    int* ptr = (int*)(realm + trueAddr);
     rt->val = *ptr & 0x0000FFFF;
 }
 
 void lw(reg* rs, reg* rt, int address){
     address = (address << 16) >> 16;
     int trueAddr = rs->val + address;
-    int* ptr = realm + trueAddr;
-    rt->val = *ptr;
-}
-
-void lwu(reg* rs, reg* rt, int address){
-    address = 0x0000FFFF & address;
-    int trueAddr = rs->val + address;
-    int* ptr = realm + trueAddr;
+    int* ptr = (int*)(realm + trueAddr);
     rt->val = *ptr;
 }
 
@@ -471,7 +460,7 @@ void lwl(reg* rs, reg* rt, int address){
     int trueAddr = rs->val + address;
     int effAddr = (trueAddr & 0xFFFFFFFC) + 3;
     int byteNum = effAddr - trueAddr;
-    int* wordPtr = realm + effAddr - 3;
+    int* wordPtr = (int*)(realm + effAddr - 3);
     int word = *wordPtr;
     switch(byteNum){
         case 0:
@@ -500,7 +489,7 @@ void lwr(reg* rs, reg* rt, int address){
     int trueAddr = rs->val + address;
     int effAddr = trueAddr & 0xFFFFFFFC;
     int byteNum = trueAddr - effAddr;
-    int* wordPtr = realm + effAddr;
+    int* wordPtr = (int*)(realm + effAddr);
     unsigned int word = *wordPtr;
     switch(byteNum){
         case 0:
@@ -527,7 +516,7 @@ void lwr(reg* rs, reg* rt, int address){
 void ll(reg* rs, reg* rt, int address){
     address = (address << 16) >> 16;
     int trueAddr = rs->val + address;
-    int* ptr = realm + trueAddr;
+    int* ptr = (int*)(realm + trueAddr);
     rt->val = *ptr;
     llbit = 1;
 }
@@ -535,21 +524,21 @@ void ll(reg* rs, reg* rt, int address){
 void sb(reg* rs, reg* rt, int address){
     address = (address << 16) >> 16;
     int trueAddr = address + rs->val;
-    int* ptr = realm + trueAddr;
+    int* ptr = (int*)(realm + trueAddr);
     *ptr = rt->val & 0x000000FF;
 }
 
 void sh(reg* rs, reg* rt, int address){
     address = (address << 16) >> 16;
     int trueAddr = address + rs->val;
-    int* ptr = realm + trueAddr;
+    int* ptr = (int*)(realm + trueAddr);
     *ptr = rt->val & 0x0000FFFF;
 }
 
 void sw(reg* rs, reg* rt, int address){
     address = (address << 16) >> 16;
     int trueAddr = address + rs->val;
-    int* ptr = realm + trueAddr;
+    int* ptr = (int*)(realm + trueAddr);
     *ptr = rt->val;
 }
 
@@ -558,7 +547,7 @@ void swl(reg* rs, reg* rt, int address){
     int trueAddr = rs->val + address;
     int effAddr = (trueAddr & 0xFFFFFFFC) + 3;
     int byteNum = effAddr - trueAddr;
-    int* wordPtr = realm + effAddr - 3;
+    int* wordPtr = (int*)(realm + effAddr - 3);
     int word = *wordPtr;
     unsigned int bytesToStore = rt->val;
     switch(byteNum){
@@ -589,7 +578,7 @@ void swr(reg* rs, reg* rt, int address){
     int trueAddr = rs->val + address;
     int effAddr = (trueAddr & 0xFFFFFFFC) + 3;
     int byteNum = effAddr - trueAddr;
-    int* wordPtr = realm + effAddr - 3;
+    int* wordPtr = (int*)(realm + effAddr - 3);
     int word = *wordPtr;
     unsigned int bytesToStore = rt->val;
     switch(byteNum){
@@ -618,7 +607,7 @@ void swr(reg* rs, reg* rt, int address){
 void sc(reg* rs, reg* rt, int address){
     address = (address << 16) >> 16;
     int trueAddr = address + rs->val;
-    int* ptr = realm + trueAddr;
+    int* ptr = (int*)(realm + trueAddr);
     if(llbit){
         *ptr = rt->val;
         rt->val = 1;
@@ -643,6 +632,79 @@ void mtlo(reg* rs){
     *lo = rs->val;
 }
 
-void syscall(){
-    
+void _syscall(){
+    int flag = reg_list[2].val;
+    switch(flag){
+        case 1:
+            printf("%d",reg_list[4].val);
+            break;
+        case 4:{
+            char* str = (char*)(realm + reg_list[4].val);
+            printf("%s",str);
+            break;
+        }
+        case 5:{
+            char input[128];
+            char pivot;
+            for(int i = 0; i < 128; i++){
+                if((pivot = getchar()) != '\n'){
+                    input[i] = pivot;
+                }else{
+                    input[i] = '\0';
+                    break;
+                }
+            }
+            if(input[0] == '0' && (input[1] == 'x' || input[1] == 'X')){
+                reg_list[2].val = strtol(input,NULL,16);
+            }else{
+                reg_list[2].val = atoi(input);
+            }
+            break;
+        }
+        case 8:{
+            int len = reg_list[5].val;
+            char input[len];
+            char pivot;
+            for(int i = 0; i < len; i++){
+                if((pivot = getchar()) != '\n'){
+                    input[i] = pivot;
+                }else{
+                    input[i] = '\0';
+                    break;
+                }
+            }
+            strcpy((char*)(reg_list[4].val + realm),input);
+            break;
+        }
+        case 9:{
+            reg_list[2].val = reg_list[28].val + reg_list[4].val;
+            break;
+        }
+        case 10:
+            exit(0);
+            break;
+        case 11:
+            printf("%c",reg_list[4].val);
+            break;
+        case 12:
+            reg_list[2].val = getchar();
+            break;
+        case 13:
+            reg_list[4].val = open((char*)(reg_list[4].val + realm),reg_list[5].val,reg_list[6].val);
+            break;
+        case 14:
+            read(reg_list[4].val,(void*)(reg_list[5].val + realm),reg_list[6].val);
+            break;
+        case 15:
+            write(reg_list[4].val,(void*)(reg_list[5].val + realm),reg_list[6].val);
+            break;
+        case 16:
+            close(reg_list[4].val);
+            break;
+        case 17:
+            exit(reg_list[4].val);
+            break;
+        default:
+            break;
+    }
 }

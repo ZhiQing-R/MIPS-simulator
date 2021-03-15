@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "compare": "cpp",
+        "cmath": "cpp",
+        "typeinfo": "c"
+    }
+}

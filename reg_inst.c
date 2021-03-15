@@ -6,12 +6,12 @@
 
 struct reg* reg_list;
 struct inst* inst_list;
-long* lo;
-long* hi;
+
 
 void regInit(){
     reg_list = malloc(32*sizeof(struct reg));
     strcpy(reg_list[0].name,"zero");
+    reg_list[0].val = 0;
     strcpy(reg_list[1].name,"at");
     strcpy(reg_list[2].name,"v0");
     strcpy(reg_list[3].name,"v1");
@@ -121,12 +121,12 @@ void instInit(){
     strcpy(inst_list[14].name,"msub");
     inst_list[14].format = R;
     inst_list[14].op = 28;
-    inst_list[14].func = 1;
+    inst_list[14].func = 4;
 
     strcpy(inst_list[15].name,"maddu");
     inst_list[15].format = R;
     inst_list[15].op = 28;
-    inst_list[15].func = 4;
+    inst_list[15].func = 1;
 
     strcpy(inst_list[16].name,"msubu");
     inst_list[16].format = R;

@@ -4,11 +4,11 @@
 #include "freader.h"
 #include "reg_inst.h"
 
-struct label label_list[64];
+struct label label_list[32];
 int label_cnt = 0;
 
 void getToken(FILE* code, char* dest){
-    char token[16];
+    char token[128];
     int word_len = 0;
     char chara;
     while(!feof(code)){
@@ -19,9 +19,9 @@ void getToken(FILE* code, char* dest){
                 getToken(code,dest);
                 return;
             }else break;
-        }else if(chara == ' ' || chara == '\n' || chara == ','){
+        }else if(chara == ' ' || chara == '\n' || chara == ',' || chara == '\t'){
             chara = getc(code);
-            while(chara == '\n' || chara == ' '){
+            while(chara == '\n' || chara == ' ' || chara == '\t'){
                 chara = getc(code);
             }
             ungetc(chara,code);
@@ -39,7 +39,7 @@ void getToken(FILE* code, char* dest){
 
 void labelCollect(FILE* src){
     char temp;
-    char token[16];
+    char token[64];
     int inst_cnt = 0;
     int len;
     while(1){
@@ -54,7 +54,6 @@ void labelCollect(FILE* src){
             label_list[label_cnt++].address = inst_cnt;
         }else if(instSearch(token) >= 0){   //Case when find an instruction
             inst_cnt++;
-            while ((char) getc(src) != '\n'){}
         }else;
         getToken(src,token);
     }
@@ -70,10 +69,11 @@ int labelSearch(char* label){
     return -1;
 }
 int encode(FILE* src, char* inst, int inst_cnt){
-    int op, rs, rt, rd, imm, address, shamt, func; 
+    int op, rs, rt, rd, address, shamt, func;
+    short imm;
     char* label;
     enum INSTRUCTION inst_num = instSearch(inst);
-    char token[16];
+    char token[64];
     int m_code;
     switch (inst_num)
     {
@@ -170,7 +170,7 @@ int encode(FILE* src, char* inst, int inst_cnt){
         imm = atoi(token);
         break;
     case BEQ:
-    case BNE:
+    case BNE:{
         getToken(src,token);
         rt = regSearch(token);
         getToken(src,token);
@@ -180,10 +180,10 @@ int encode(FILE* src, char* inst, int inst_cnt){
         if(labelIndex == -1){
             imm = atoi(token);
         }else{
-            short offset = labelIndex - inst_cnt;
-            imm = 0 + (unsigned short)offset;
+            imm = labelIndex - inst_cnt;
         }
         break;
+    }
     case BGEZ:
     case BGEZAL:
     case BGTZ:
@@ -195,28 +195,33 @@ int encode(FILE* src, char* inst, int inst_cnt){
     case TGEI:
     case TGEIU:
     case TLTI:
-    case TLTIU:
+    case TLTIU:{
         getToken(src,token);
         rs = regSearch(token);
         getToken(src,token);
         int labelIndex = labelSearch(token);
         if(labelIndex == -1){
-            imm = atoi(token);
+            if(token[0] == '0' && (token[1] == 'x' || token[1] == 'X')){
+                imm = strtol(token,NULL,16);
+            }else{
+                imm = atoi(token);
+            }
         }else{
-            short offset = labelIndex - inst_cnt;
-            imm = 0 + (unsigned short)offset;
+            imm = labelIndex - inst_cnt;
         }
         break;
+    }
     case J:
-    case JAL:
+    case JAL:{
         getToken(src,token);
         int labelIndex = labelSearch(token);
         if(labelIndex == -1){
-            address = atoi(token);
+            address = atoi(token) + + 0x100000;
         }else{
-            address = labelIndex;
+            address = labelIndex + 0x100000;
         }
         break;
+    }
     case JALR:
         getToken(src,token);
         rs = regSearch(token);
@@ -259,7 +264,7 @@ int encode(FILE* src, char* inst, int inst_cnt){
         }
         imm = atoi(num);
         strncpy(num,token+i+1,wl-i-2);
-        num[wl-i-1] = '\0';
+        num[wl-i-2] = '\0';
         rs = regSearch(num);
         break;
     }
@@ -293,13 +298,15 @@ int encode(FILE* src, char* inst, int inst_cnt){
     op = inst_list[inst_num].op;
     func = inst_list[inst_num].func;
     if(inst_fmt == R){
-        m_code = (op<<26) + (rs<<21) + (rt<<16) + (rd<<11) + (shamt<<6) + func;;
+        m_code = (op<<26) + (rs<<21) + (rt<<16) + (rd<<11) + (shamt<<6) + func;
     }else if(inst_fmt == FJ){
         m_code = (op<<26) + address;
     }else if (func == -1){
-        m_code = (op<<26) + (rs<<21) + (rt<<16) + (short)imm;
+        m_code = (op<<26) + (rs<<21) + (rt<<16) + (unsigned short)imm;
     }else{
-        m_code = (op<<26) + (rs<<21) + (func<<16) + (short)imm;
+        m_code = (op<<26) + (rs<<21) + (func<<16) + (unsigned short)imm;
     }
+    printf("%s: ",inst_list[inst_num].name);
     return m_code;
 }
+
