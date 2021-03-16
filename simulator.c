@@ -7,6 +7,9 @@
 int* PC;
 long realm;
 int llbit = 0;
+FILE* syscall_inputs;
+FILE* output_file;
+FILE* input_mips;
 
 void execute(){
     int instruction = *PC;
@@ -316,17 +319,27 @@ void execute(){
     }
 }
 
-int main(){
+int main(int argc, char** argv){
+    if(argc < 4){
+        printf("wrong number of arguments");
+    }
+
+    input_mips = fopen(argv[1], "r");
+    syscall_inputs = fopen(argv[2], "r");
+    output_file = fopen(argv[3], "w");
+
     int* realmPtr = malloc(6*1024*1024);
     realm = (long)realmPtr;
-    FILE* src = fopen("test.txt","r");
-    int* text_end = assemble(realm+0x400000,src);
-    rewind(src);
-    writeData(src,realm + 0x500000);
+    int* text_end = assemble(realm+0x400000,input_mips);
+    rewind(input_mips);
+    writeData(input_mips,realm + 0x500000);
     reg_list[29].val = 6*1024*1024 - 4;
     PC = (int*)(realm + 0x400000);
     while(PC < text_end){
         execute();
     }
+    fclose(input_mips);
+    fclose(output_file);
+    fclose(syscall_inputs);
     return 0; 
 }

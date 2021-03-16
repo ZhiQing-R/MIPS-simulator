@@ -306,7 +306,7 @@ int encode(FILE* src, char* inst, int inst_cnt){
     }else{
         m_code = (op<<26) + (rs<<21) + (func<<16) + (unsigned short)imm;
     }
-    printf("%s: ",inst_list[inst_num].name);
+    //printf("%s: ",inst_list[inst_num].name);
     return m_code;
 }
 

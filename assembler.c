@@ -60,7 +60,8 @@ void printBin(unsigned int number){
 int* assemble(long fp, FILE* src){
     int* PC = (int*)fp;
     char in;
-    FILE* mips_code = fopen("code.txt","w");
+    FILE* mips_code = src;
+    /*FILE* mips_code = fopen("code.txt","w");
     in = getc(src);
     while (!feof(src))
     {
@@ -68,7 +69,7 @@ int* assemble(long fp, FILE* src){
         in = getc(src);
     }
     fclose(mips_code);
-    mips_code = fopen("code.txt","r");
+    mips_code = fopen("code.txt","r");*/
     int code;
     regInit();
     instInit();
@@ -86,12 +87,12 @@ int* assemble(long fp, FILE* src){
         if(instSearch(token) >= 0){
             inst_cnt++;
             code = encode(mips_code,token,inst_cnt);
-            printBin(code);
+            //printBin(code);
             *PC = code;
             PC = PC + 1;
         }
     }
-    fclose(mips_code);
+    //fclose(mips_code);
     return PC;
 }
 

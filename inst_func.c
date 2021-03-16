@@ -12,6 +12,9 @@ int* hi;
 extern int* PC;
 extern long realm;
 extern int llbit;
+extern FILE* syscall_inputs;
+extern FILE* output_file;
+extern FILE* input_mips;
 
 void add(reg* rs, reg* rt, reg* rd){
     int result = rs->val+ rt->val;
@@ -636,18 +639,18 @@ void _syscall(){
     int flag = reg_list[2].val;
     switch(flag){
         case 1:
-            printf("%d",reg_list[4].val);
+            fprintf(output_file,"%d",reg_list[4].val);
             break;
         case 4:{
             char* str = (char*)(realm + reg_list[4].val);
-            printf("%s",str);
+            fprintf(output_file,"%s",str);
             break;
         }
         case 5:{
             char input[128];
             char pivot;
             for(int i = 0; i < 128; i++){
-                if((pivot = getchar()) != '\n'){
+                if((pivot = getc(syscall_inputs)) != '\n'){
                     input[i] = pivot;
                 }else{
                     input[i] = '\0';
@@ -666,7 +669,7 @@ void _syscall(){
             char input[len];
             char pivot;
             for(int i = 0; i < len; i++){
-                if((pivot = getchar()) != '\n'){
+                if((pivot = getc(syscall_inputs)) != '\n'){
                     input[i] = pivot;
                 }else{
                     input[i] = '\0';
@@ -684,10 +687,10 @@ void _syscall(){
             exit(0);
             break;
         case 11:
-            printf("%c",reg_list[4].val);
+            fprintf(output_file,"%c",reg_list[4].val);
             break;
         case 12:
-            reg_list[2].val = getchar();
+            reg_list[2].val = getc(syscall_inputs);
             break;
         case 13:
             reg_list[4].val = open((char*)(reg_list[4].val + realm),reg_list[5].val,reg_list[6].val);
