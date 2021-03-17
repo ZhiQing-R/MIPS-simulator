@@ -325,8 +325,11 @@ int main(int argc, char** argv){
     }
 
     input_mips = fopen(argv[1], "r");
+    //input_mips = fopen("code.asm","r");
     syscall_inputs = fopen(argv[2], "r");
+    //syscall_inputs = stdin;
     output_file = fopen(argv[3], "w");
+    //output_file = stdout;
 
     int* realmPtr = malloc(6*1024*1024);
     realm = (long)realmPtr;

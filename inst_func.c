@@ -693,13 +693,13 @@ void _syscall(){
             reg_list[2].val = getc(syscall_inputs);
             break;
         case 13:
-            reg_list[4].val = open((char*)(reg_list[4].val + realm),reg_list[5].val,reg_list[6].val);
+            reg_list[2].val = open((char*)(reg_list[4].val + realm),reg_list[5].val,reg_list[6].val);
             break;
         case 14:
-            read(reg_list[4].val,(void*)(reg_list[5].val + realm),reg_list[6].val);
+            reg_list[2].val = read(reg_list[4].val,(void*)(reg_list[5].val + realm),reg_list[6].val);
             break;
         case 15:
-            write(reg_list[4].val,(void*)(reg_list[5].val + realm),reg_list[6].val);
+            reg_list[2].val = write(reg_list[4].val,(void*)(reg_list[5].val + realm),reg_list[6].val);
             break;
         case 16:
             close(reg_list[4].val);
