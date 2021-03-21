@@ -29,6 +29,8 @@ void getToken(FILE* code, char* dest){
                 getToken(code,dest);
                 return;
             }else break;
+        }else if(chara == -1){
+            break;
         }else{
             token[word_len++] = chara;
         }
