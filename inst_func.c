@@ -20,8 +20,10 @@ void add(reg* rs, reg* rt, reg* rd){
     int result = rs->val+ rt->val;
     if(rs->val > 0 && rt->val > 0 && result < 0){
         puts("Addition overflow!");
+        exit(0);
     }else if(rs->val < 0 && rt->val < 0 && result > 0){
         puts("Addition overflow!");
+        exit(0);
     }else{
         rd->val = result;
     }
@@ -36,8 +38,10 @@ void addi(reg* rt, reg* rs, short imm){
     int result = imm + rs->val;
     if(rs->val > 0 && imm > 0 && result < 0){
         puts("Addition overflow!");
+        exit(0);
     }else if(rs->val < 0 && imm < 0 && result > 0){
         puts("Addition overflow!");
+        exit(0);
     }else{
         rt->val = result;
     }
@@ -92,6 +96,7 @@ void clo(reg* rd, reg* rs){
 void _div(reg* rs, reg* rt){
     if(rt->val == 0){
         puts("Zero division!");
+        exit(0);
     }
     *lo = rs->val/rt->val;
     *hi = rs->val%rt->val;
@@ -100,6 +105,7 @@ void _div(reg* rs, reg* rt){
 void divu(reg* rs, reg* rt){
     if(rt->val == 0){
         puts("Zero division!");
+        exit(0);
     }
     unsigned int a = rs->val;
     unsigned int b = rt->val;
@@ -209,8 +215,10 @@ void sub(reg* rd, reg* rs, reg* rt){
     int result = negRt + rs->val;
     if(rs->val > 0 && negRt > 0 && result < 0){
         puts("subtraction overflow");
+        exit(0);
     }else if(rs->val < 0 && negRt < 0 && result > 0){
         puts("subtraction overflow");
+        exit(0);
     }else{
         rd->val = result;
     }
@@ -348,30 +356,35 @@ void jr(reg* rs){
 void teq(reg* rs, reg* rt){
     if(rs->val == rt->val){
         puts("TEQ Trap");
+        exit(0);
     }
 }
 
 void teqi(reg* rs, short imm){
     if(rs->val == imm){
         puts("TEQI Trap");
+        exit(0);
     }
 }
 
 void tne(reg* rs, reg* rt){
     if(rs->val != rt->val){
         puts("TNE Trap");
+        exit(0);
     }
 }
 
 void tnei(reg* rs, short imm){
     if(rs->val != imm){
         puts("TNEI Trap");
+        exit(0);
     }
 }
 
 void tge(reg* rs, reg* rt){
     if(rs->val >= rt->val){
         puts("TGE Trap");
+        exit(0);
     }
 }
 
@@ -380,12 +393,14 @@ void tgeu(reg* rs, reg* rt){
     unsigned int RT = rt->val;
     if(RS >= RT){
         puts("TGEU Trap");
+        exit(0);
     }
 }
 
 void tgei(reg* rs, short imm){
     if(rs->val >= imm){
         puts("TGEI Trap");
+        exit(0);
     }
 }
 
@@ -393,12 +408,14 @@ void tgeiu(reg* rs, short imm){
     int IMM = imm;
     if(rs->val >= (unsigned int)IMM){
         puts("TGEIU Trap");
+        exit(0);
     }
 }
 
 void tlt(reg* rs, reg* rt){
     if(rs->val < rt->val){
         puts("TLT Trap");
+        exit(0);
     }
 }
 
@@ -407,12 +424,14 @@ void tltu(reg* rs, reg* rt){
     unsigned int RT = rt->val;
     if(RS < RT){
         puts("TLTU Trap");
+        exit(0);
     }
 }
 
 void tlti(reg* rs, short imm){
     if(rs->val < imm){
         puts("TLTI Trap");
+        exit(0);
     }
 }
 
@@ -420,6 +439,7 @@ void tltiu(reg* rs, short imm){
     int IMM = imm;
     if(rs->val < (unsigned int)IMM){
         puts("TLTIU Trap");
+        exit(0);
     }
 }
 

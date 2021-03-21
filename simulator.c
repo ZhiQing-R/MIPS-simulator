@@ -157,6 +157,7 @@ void execute(){
                     break;
                 default:
                     puts("func not supported");
+                    exit(0);
                     break;
             }
             break;
@@ -192,6 +193,7 @@ void execute(){
                     break;
                 default:
                     puts("Not supported");
+                    exit(0);
                     break;
             }
             break;
@@ -265,6 +267,7 @@ void execute(){
                     break;
                 default:
                     puts("Not supported");
+                    exit(0);
                     break;
             }
         }
@@ -312,6 +315,7 @@ void execute(){
             break;
         default:
             puts("Not supported");
+            exit(0);
             break;   
     }
     if(!jump){
